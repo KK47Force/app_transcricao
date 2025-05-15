@@ -60,19 +60,69 @@ def convert_to_wav(file_path):
 
 
 def transcribe_audio(file_path):
-    """Transcreve o áudio de um arquivo MP3."""
+    """Transcreve o áudio de um arquivo WAV. Se o áudio for maior que 1 minuto,
+    divide em partes, transcreve cada parte e une os resultados."""
     recognizer = sr.Recognizer()
 
     try:
-        with sr.AudioFile(file_path) as source:
-            print("Carregando o áudio para transcrição...")
-            audio_data = recognizer.record(source)
-            text = recognizer.recognize_google(audio_data, language="pt-BR")
-            return text
+        # Carregando o arquivo de áudio com pydub para verificar sua duração
+        audio = AudioSegment.from_file(file_path)
+        duration_seconds = len(audio) / 1000  # Duração em segundos
+
+        # Se o áudio for maior que 1 minuto, vamos dividi-lo
+        if duration_seconds > 60:
+            print(
+                f"Áudio com duração de {duration_seconds/60:.2f} minutos. Dividindo em partes...")
+
+            # Calcular quantos segmentos de 1 minuto teremos
+            segment_length_ms = 60 * 1000  # 1 minuto em milissegundos
+            total_segments = int(duration_seconds / 60) + \
+                (1 if duration_seconds % 60 > 0 else 0)
+
+            complete_transcription = ""
+            for i in range(total_segments):
+                print(f"Processando parte {i+1} de {total_segments}...")
+
+                # Extrair o segmento atual
+                start_ms = i * segment_length_ms
+                end_ms = min((i + 1) * segment_length_ms, len(audio))
+                segment = audio[start_ms:end_ms]
+
+                # Salvar o segmento em um arquivo temporário
+                temp_segment_path = file_path + f"_segment_{i}.wav"
+                segment.export(temp_segment_path, format="wav")
+
+                # Transcrever o segmento
+                with sr.AudioFile(temp_segment_path) as source:
+                    audio_data = recognizer.record(source)
+                    segment_text = recognizer.recognize_google(
+                        audio_data, language="pt-BR")
+
+                # Adicionar à transcrição completa com um espaço entre cada segmento
+                if complete_transcription:
+                    complete_transcription += " " + segment_text
+                else:
+                    complete_transcription = segment_text
+
+                # Remover o arquivo temporário
+                os.remove(temp_segment_path)
+
+            print("Todas as partes foram transcritas e unidas.")
+            return complete_transcription
+        else:
+            # Áudio curto, transcrição normal
+            with sr.AudioFile(file_path) as source:
+                print("Carregando o áudio para transcrição...")
+                audio_data = recognizer.record(source)
+                text = recognizer.recognize_google(
+                    audio_data, language="pt-BR")
+                return text
     except sr.UnknownValueError:
         return "Não foi possível entender o áudio."
     except sr.RequestError as e:
         return f"Erro no serviço de reconhecimento de fala: {e}"
+    except Exception as e:
+        return f"Erro ao processar o áudio: {e}"
 
 
 def main():

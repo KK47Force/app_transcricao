@@ -1,24 +1,43 @@
 import flet as ft
 
+# Definindo constantes para cores e estilos reutilizáveis
+COR_PRINCIPAL = "#6366F1"
+COR_TEXTO_SECUNDARIO = "#71757E"
+COR_BORDA = "#E0E3EA"
+COR_FUNDO = "#FFFFFF"
+COR_ALERTA = "#FF5252"
+COR_TEXTO_PRINCIPAL = "#1A1D21"
+
 
 def main(page: ft.Page):
-    # Configuração da página com scroll habilitado explicitamente
+    # Configuração da página
     page.title = "Transcrição de Áudio"
     page.window.width = 540
     page.window.height = 650
-    page.bgcolor = "#FFFFFF"
-    page.scroll = ft.ScrollMode.AUTO  # Habilitando scroll na página
+    page.bgcolor = COR_FUNDO
     page.padding = 0
-
-    # Centralizar a janela na tela
     page.window.center()
+
+    # Função para criar botões com estilo padronizado
+    def criar_botao(texto, icone, cor_icone, cor_bg, cor_texto, borda=None):
+        return ft.ElevatedButton(
+            texto,
+            icon=icone,
+            icon_color=cor_icone,
+            style=ft.ButtonStyle(
+                shape=ft.RoundedRectangleBorder(radius=6),
+                color=cor_texto,
+                bgcolor=cor_bg,
+                side=borda,
+            ),
+        )
 
     # Título do aplicativo com ícone
     titulo_app = ft.Row(
         [
-            ft.Icon(ft.Icons.HEADPHONES, size=28, color="#6366F1"),
+            ft.Icon(ft.Icons.HEADPHONES, size=28, color=COR_PRINCIPAL),
             ft.Text("AudioTranscribe", size=22,
-                    weight=ft.FontWeight.BOLD, color="#6366F1"),
+                    weight=ft.FontWeight.BOLD, color=COR_PRINCIPAL),
         ],
         alignment=ft.MainAxisAlignment.CENTER,
         spacing=8,
@@ -28,42 +47,35 @@ def main(page: ft.Page):
     subtitulo = ft.Text(
         "       Faça upload de um arquivo de áudio ou grave diretamente para começar",
         size=14,
-        color="#71757E",
+        color=COR_TEXTO_SECUNDARIO,
         text_align=ft.TextAlign.CENTER,
     )
 
-    # Área de upload de áudio - ajustada para ficar igual à imagem
+    # Área de upload de áudio
     area_upload = ft.Container(
         content=ft.Column(
             [
-                # Ícone de upload com arquivo - ajustado para o formato exato da imagem
-                ft.Icon(ft.Icons.UPLOAD_FILE, size=48, color="#6366F1"),
+                ft.Icon(ft.Icons.UPLOAD_FILE, size=48, color=COR_PRINCIPAL),
                 ft.Text("Upload do seu áudio",
                         weight=ft.FontWeight.W_500, size=16),
                 ft.Text("Arraste e solte um arquivo de áudio ou clique para navegar",
-                        size=13, color="#71757E"),
+                        size=13, color=COR_TEXTO_SECUNDARIO),
                 ft.Row(
                     [
-                        ft.ElevatedButton(
+                        criar_botao(
                             "Selecionar arquivo",
-                            icon=ft.Icons.FOLDER_OPEN,
-                            icon_color="#FFFFFF",
-                            style=ft.ButtonStyle(
-                                shape=ft.RoundedRectangleBorder(radius=6),
-                                color="#FFFFFF",
-                                bgcolor="#6366F1",
-                            ),
+                            ft.Icons.FOLDER_OPEN,
+                            COR_FUNDO,
+                            COR_PRINCIPAL,
+                            COR_FUNDO
                         ),
-                        ft.ElevatedButton(
+                        criar_botao(
                             "Gravar áudio",
-                            icon=ft.Icons.MIC,
-                            icon_color="#6366F1",
-                            style=ft.ButtonStyle(
-                                shape=ft.RoundedRectangleBorder(radius=6),
-                                color="#6366F1",
-                                bgcolor="#FFFFFF",
-                                side=ft.BorderSide(1, "#6366F1"),
-                            ),
+                            ft.Icons.MIC,
+                            COR_PRINCIPAL,
+                            COR_FUNDO,
+                            COR_PRINCIPAL,
+                            ft.BorderSide(1, COR_PRINCIPAL)
                         ),
                     ],
                     alignment=ft.MainAxisAlignment.CENTER,
@@ -75,11 +87,11 @@ def main(page: ft.Page):
         ),
         width=500,
         height=190,
-        border=ft.border.all(1, "#E0E3EA"),
+        border=ft.border.all(1, COR_BORDA),
         border_radius=8,
         padding=15,
-        margin=ft.margin.only(left=20, right=20),
-        bgcolor="#FFFFFF",
+        margin=ft.margin.symmetric(horizontal=20),
+        bgcolor=COR_FUNDO,
     )
 
     # Título da área de transcrição
@@ -87,7 +99,7 @@ def main(page: ft.Page):
         "Transcrição",
         size=16,
         weight=ft.FontWeight.BOLD,
-        color="#1A1D21"
+        color=COR_TEXTO_PRINCIPAL
     )
 
     # Área de exibição da transcrição
@@ -97,92 +109,74 @@ def main(page: ft.Page):
                 ft.Text(
                     "Nenhuma transcrição ainda",
                     italic=True,
-                    color="#71757E",
+                    color=COR_TEXTO_SECUNDARIO,
                     text_align=ft.TextAlign.CENTER,
                     size=14,
                 ),
                 ft.Text(
                     "Faça upload de um arquivo de áudio para iniciar",
                     size=13,
-                    color="#71757E",
+                    color=COR_TEXTO_SECUNDARIO,
                     text_align=ft.TextAlign.CENTER,
                 ),
             ],
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             alignment=ft.MainAxisAlignment.CENTER,
             spacing=8,
-            scroll=ft.ScrollMode.AUTO,
         ),
         width=500,
         height=250,
-        bgcolor="#FFFFFF",
-        border=ft.border.all(1, "#E0E3EA"),
+        bgcolor=COR_FUNDO,
+        border=ft.border.all(1, COR_BORDA),
         border_radius=8,
         padding=20,
-        margin=ft.margin.only(left=20, right=20),
+        margin=ft.margin.symmetric(horizontal=20),
         clip_behavior=ft.ClipBehavior.HARD_EDGE,
     )
 
-    # Adiciona um botão para limpar a transcrição
-    botao_limpar = ft.ElevatedButton(
+    # Botão para limpar a transcrição
+    botao_limpar = criar_botao(
         "Limpar transcrição",
-        icon=ft.Icons.CLEANING_SERVICES_OUTLINED,
-        icon_color="#FF5252",
-        style=ft.ButtonStyle(
-            shape=ft.RoundedRectangleBorder(radius=6),
-            color="#FF5252",
-            bgcolor="#FFFFFF",
-            side=ft.BorderSide(1, "#FF5252"),
-        ),
+        ft.Icons.CLEANING_SERVICES_OUTLINED,
+        COR_ALERTA,
+        COR_FUNDO,
+        COR_ALERTA,
+        ft.BorderSide(1, COR_ALERTA)
     )
 
-    # Container principal com scroll usando Container ao invés de Column diretamente
-    # Isso garante que o scroll funcione corretamente
-    conteudo_principal = ft.Container(
-        content=ft.Column(
-            [
-                ft.Container(height=15),
-                titulo_app,
-                ft.Container(height=5),
-                subtitulo,
-                ft.Container(height=15),
-                area_upload,
-                ft.Container(height=15),
-                ft.Container(
-                    content=titulo_transcricao,
-                    margin=ft.margin.only(left=20)
+    # Conteúdo principal com layout simplificado
+    conteudo_principal = ft.Column(
+        [
+            ft.Container(padding=15),  # Espaçamento superior
+            titulo_app,
+            ft.Container(padding=5),  # Espaçamento pequeno
+            subtitulo,
+            ft.Container(padding=15),  # Espaçamento médio
+            area_upload,
+            ft.Container(padding=15),  # Espaçamento médio
+            ft.Container(
+                content=titulo_transcricao,
+                margin=ft.margin.only(left=20)
+            ),
+            ft.Container(padding=8),   # Espaçamento pequeno
+            area_transcricao,
+            ft.Container(padding=15),  # Espaçamento médio
+            ft.Container(
+                content=ft.Row(
+                    [botao_limpar],
+                    alignment=ft.MainAxisAlignment.END,
                 ),
-                ft.Container(height=8),
-                area_transcricao,
-                ft.Container(height=15),
-                ft.Container(
-                    content=ft.Row(
-                        [botao_limpar],
-                        alignment=ft.MainAxisAlignment.END,
-                    ),
-                    margin=ft.margin.only(right=20)
-                ),
-                ft.Container(height=15),
-            ],
-            spacing=0,
-            horizontal_alignment=ft.CrossAxisAlignment.START,
-            scroll=ft.ScrollMode.AUTO,  # Scroll na coluna
-        ),
-        expand=True,  # Importante: permite que o container se expanda conforme necessário
+                margin=ft.margin.only(right=20)
+            ),
+            ft.Container(padding=15),  # Espaçamento inferior
+        ],
+        spacing=0,
+        scroll=ft.ScrollMode.AUTO,  # Scroll apenas na coluna principal
+        expand=True,
     )
 
-    # Adiciona o conteúdo principal à página em um ScrollableControl
-    page.add(
-        ft.ListView(
-            [conteudo_principal],
-            expand=True,
-            spacing=0,
-            padding=0,
-            auto_scroll=False
-        )
-    )
-
-    # Garantir que a página seja atualizada
+    # Adiciona o conteúdo à página
+    page.add(conteudo_principal)
     page.update()
 
 

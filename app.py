@@ -71,8 +71,19 @@ def transcribe_audio(file_path):
 
         # Se o áudio for maior que 1 minuto, vamos dividi-lo
         if duration_seconds > 60:
-            print(
-                f"Áudio com duração de {duration_seconds/60:.2f} minutos. Dividindo em partes...")
+            # Formatação da mensagem com minutos e segundos
+            minutes = int(duration_seconds // 60)
+            seconds = int(duration_seconds % 60)
+
+            minute_text = "minuto" if minutes == 1 else "minutos"
+            second_text = "segundo" if seconds == 1 else "segundos"
+
+            if seconds > 0:
+                duration_msg = f"Áudio com duração de {minutes} {minute_text} e {seconds} {second_text}. Dividindo em partes..."
+            else:
+                duration_msg = f"Áudio com duração de {minutes} {minute_text}. Dividindo em partes..."
+
+            print(duration_msg)
 
             # Calcular quantos segmentos de 1 minuto teremos
             segment_length_ms = 60 * 1000  # 1 minuto em milissegundos

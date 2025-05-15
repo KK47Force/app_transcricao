@@ -1,0 +1,8 @@
+venv/
+.venv/
+audio.opus
+audio.wav
+audio1.wav
+audio1.opus
+audio3.wav
+audio3.opus

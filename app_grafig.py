@@ -12,6 +12,7 @@ COR_BORDA = "#E0E3EA"
 COR_FUNDO = "#FFFFFF"
 COR_ALERTA = "#FF5252"
 COR_TEXTO_PRINCIPAL = "#1A1D21"
+COR_SUCESSO = "#4CAF50"  # Cor verde para o botão de copiar
 
 
 def main(page: ft.Page):
@@ -46,6 +47,17 @@ def main(page: ft.Page):
         mensagem_status.color = cor
         # Garante que a mensagem seja exibida imediatamente
         page.update()
+
+    # Função para copiar o texto da transcrição
+    def copiar_transcricao(e):
+        # Verificamos se há texto para copiar
+        if len(area_transcricao.content.controls) == 1 and isinstance(area_transcricao.content.controls[0], ft.Text):
+            texto = area_transcricao.content.controls[0].value
+            page.set_clipboard(texto)
+            mostrar_status(
+                "Texto copiado para a área de transferência!", COR_SUCESSO)
+        else:
+            mostrar_status("Não há texto para copiar.", COR_ALERTA)
 
     # Função para selecionar arquivo de áudio
     def selecionar_arquivo_audio(e):
@@ -113,9 +125,7 @@ def main(page: ft.Page):
                 print(f"Erro na transcrição: {str(trans_error)}")
                 mostrar_status(
                     f"Erro na transcrição: {str(trans_error)}", COR_ALERTA)
-                raise
-
-            # Atualizar a área de transcrição com o texto transcrito
+                raise            # Atualizar a área de transcrição com o texto transcrito
             area_transcricao.content.controls = [
                 ft.Text(
                     texto_transcrito,
@@ -126,8 +136,9 @@ def main(page: ft.Page):
             ]
             mostrar_status("Transcrição concluída com sucesso!", COR_PRINCIPAL)
 
-            # Habilitar o botão de limpar
+            # Habilitar os botões de limpar e copiar
             botao_limpar.disabled = False
+            botao_copiar.disabled = False
         except Exception as e:
             print(f"ERRO: {str(e)}")
             print("Detalhes do erro:")
@@ -157,11 +168,11 @@ def main(page: ft.Page):
                 color=COR_TEXTO_SECUNDARIO,
                 text_align=ft.TextAlign.CENTER,
             ),
-        ]
-        # Limpar o arquivo selecionado
+        ]        # Limpar o arquivo selecionado
         arquivo_selecionado.value = ""
-        # Desabilitar o botão de limpar
+        # Desabilitar os botões de limpar e copiar
         botao_limpar.disabled = True
+        botao_copiar.disabled = True
         # Mostrar mensagem de limpeza
         mostrar_status("Transcrição limpa.")
         page.update()
@@ -300,9 +311,7 @@ def main(page: ft.Page):
         padding=20,
         margin=ft.margin.symmetric(horizontal=20),
         clip_behavior=ft.ClipBehavior.HARD_EDGE
-    )
-
-    # Botão para limpar a transcrição
+    )    # Botão para limpar a transcrição
     botao_limpar = criar_botao(
         "Limpar transcrição",
         ft.Icons.CLEANING_SERVICES_OUTLINED,
@@ -313,6 +322,18 @@ def main(page: ft.Page):
         desativado=True  # Começa desativado até ter uma transcrição
     )
     botao_limpar.on_click = limpar_transcricao
+
+    # Botão para copiar a transcrição
+    botao_copiar = criar_botao(
+        "Copiar texto",
+        ft.Icons.CONTENT_COPY,
+        COR_FUNDO,
+        COR_SUCESSO,
+        COR_FUNDO,
+        None,
+        desativado=True  # Começa desativado até ter uma transcrição
+    )
+    botao_copiar.on_click = copiar_transcricao
 
     # Conteúdo principal com layout simplificado
     conteudo_principal = ft.Column(
@@ -329,12 +350,13 @@ def main(page: ft.Page):
                 margin=ft.margin.only(left=20)
             ),
             ft.Container(padding=8),   # Espaçamento pequeno
-            area_transcricao,
-            ft.Container(padding=15),  # Espaçamento médio
+            area_transcricao,            ft.Container(
+                padding=15),  # Espaçamento médio
             ft.Container(
                 content=ft.Row(
-                    [botao_limpar],
+                    [botao_limpar, botao_copiar],
                     alignment=ft.MainAxisAlignment.END,
+                    spacing=10,
                 ),
                 margin=ft.margin.only(right=20)
             ),

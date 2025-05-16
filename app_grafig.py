@@ -1,4 +1,9 @@
 import flet as ft
+import os
+import sys
+import traceback
+# Importando as funções do app.py
+from app import convert_to_wav, transcribe_audio
 
 # Definindo constantes para cores e estilos reutilizáveis
 COR_PRINCIPAL = "#6366F1"
@@ -18,8 +23,11 @@ def main(page: ft.Page):
     page.padding = 0
     page.window.center()
 
+    # Variável para armazenar o caminho do arquivo selecionado
+    arquivo_selecionado = ft.Text("", size=0)  # Tamanho 0 para não ser visível
+
     # Função para criar botões com estilo padronizado
-    def criar_botao(texto, icone, cor_icone, cor_bg, cor_texto, borda=None):
+    def criar_botao(texto, icone, cor_icone, cor_bg, cor_texto, borda=None, desativado=False):
         return ft.ElevatedButton(
             texto,
             icon=icone,
@@ -30,7 +38,133 @@ def main(page: ft.Page):
                 bgcolor=cor_bg,
                 side=borda,
             ),
+            disabled=desativado,
+        )    # Função para mostrar mensagens de status
+
+    def mostrar_status(mensagem, cor=COR_TEXTO_SECUNDARIO):
+        mensagem_status.value = mensagem
+        mensagem_status.color = cor
+        # Garante que a mensagem seja exibida imediatamente
+        page.update()
+
+    # Função para selecionar arquivo de áudio
+    def selecionar_arquivo_audio(e):
+        escolher_arquivo = ft.FilePicker(
+            on_result=processar_arquivo_selecionado)
+        page.overlay.append(escolher_arquivo)
+        page.update()
+        escolher_arquivo.pick_files(
+            allowed_extensions=["mp3", "wav", "opus", "ogg", "flac", "aac"],
+            dialog_title="Selecionar arquivo de áudio",
         )
+
+    # Função para processar o arquivo selecionado
+    def processar_arquivo_selecionado(e):
+        if e.files and len(e.files) > 0:
+            arquivo_selecionado.value = e.files[0].path
+            nome_arquivo = os.path.basename(arquivo_selecionado.value)
+            mostrar_status(f"Arquivo selecionado: {nome_arquivo}")
+
+            # Habilitando o botão de transcrever
+            botao_transcrever.disabled = False
+            page.update()
+
+    # Função para transcrever o áudio
+    def iniciar_transcricao(e):
+        try:
+            if not arquivo_selecionado.value:
+                mostrar_status("Nenhum arquivo selecionado.", COR_ALERTA)
+                return
+
+            mostrar_status(
+                "Iniciando processo de transcrição...", COR_PRINCIPAL)
+
+            # Indicador de progresso
+            page.splash = ft.ProgressBar()
+            botao_transcrever.disabled = True
+            botao_selecionar_arquivo.disabled = True
+            page.update()
+
+            # Print para debug
+            print(f"Arquivo selecionado: {arquivo_selecionado.value}")
+
+            # Mostrar status de conversão
+            mostrar_status("Convertendo o arquivo para WAV...")
+
+            # Converter o arquivo para WAV
+            try:
+                arquivo_wav = convert_to_wav(arquivo_selecionado.value)
+                print(f"Arquivo convertido: {arquivo_wav}")
+            except Exception as conv_error:
+                print(f"Erro na conversão: {str(conv_error)}")
+                mostrar_status(
+                    f"Erro na conversão: {str(conv_error)}", COR_ALERTA)
+                raise
+
+            # Mostrar status de transcrição
+            mostrar_status(
+                "Transcrevendo o áudio... Isso pode levar alguns instantes.")
+
+            # Transcrever o áudio
+            try:
+                texto_transcrito = transcribe_audio(arquivo_wav)
+                print(f"Transcrição concluída: {texto_transcrito[:50]}...")
+            except Exception as trans_error:
+                print(f"Erro na transcrição: {str(trans_error)}")
+                mostrar_status(
+                    f"Erro na transcrição: {str(trans_error)}", COR_ALERTA)
+                raise
+
+            # Atualizar a área de transcrição com o texto transcrito
+            area_transcricao.content.controls = [
+                ft.Text(
+                    texto_transcrito,
+                    size=14,
+                    color=COR_TEXTO_PRINCIPAL,
+                    selectable=True,
+                )
+            ]
+            mostrar_status("Transcrição concluída com sucesso!", COR_PRINCIPAL)
+
+            # Habilitar o botão de limpar
+            botao_limpar.disabled = False
+        except Exception as e:
+            print(f"ERRO: {str(e)}")
+            print("Detalhes do erro:")
+            traceback.print_exc()
+            mostrar_status(f"Erro: {str(e)}", COR_ALERTA)
+        finally:
+            # Remover o indicador de progresso
+            page.splash = None
+            botao_transcrever.disabled = False
+            botao_selecionar_arquivo.disabled = False
+            page.update()
+
+    # Função para limpar a transcrição
+    def limpar_transcricao(e):
+        # Restaurar o conteúdo padrão da área de transcrição
+        area_transcricao.content.controls = [
+            ft.Text(
+                "Nenhuma transcrição ainda",
+                italic=True,
+                color=COR_TEXTO_SECUNDARIO,
+                text_align=ft.TextAlign.CENTER,
+                size=14,
+            ),
+            ft.Text(
+                "       Faça upload de um arquivo de áudio para iniciar",
+                size=13,
+                color=COR_TEXTO_SECUNDARIO,
+                text_align=ft.TextAlign.CENTER,
+            ),
+        ]
+        # Limpar o arquivo selecionado
+        arquivo_selecionado.value = ""
+        # Desabilitar o botão de limpar
+        botao_limpar.disabled = True
+        # Mostrar mensagem de limpeza
+        mostrar_status("Transcrição limpa.")
+        page.update()
 
     # Título do aplicativo com ícone
     titulo_app = ft.Row(
@@ -50,8 +184,48 @@ def main(page: ft.Page):
         color=COR_TEXTO_SECUNDARIO,
         text_align=ft.TextAlign.CENTER,
     )
+    # Mensagem de status para informar o usuário sobre o processo
+    mensagem_status = ft.Text(
+        "",
+        size=13,
+        color=COR_TEXTO_SECUNDARIO,
+        text_align=ft.TextAlign.CENTER,
+        selectable=True,  # Permitir selecionar o texto para facilitar a cópia do nome do arquivo
+    )
 
-    # Área de upload de áudio
+    # Botões para as ações
+    botao_selecionar_arquivo = criar_botao(
+        "Selecionar arquivo",
+        ft.Icons.FOLDER_OPEN,
+        COR_FUNDO,
+        COR_PRINCIPAL,
+        COR_FUNDO
+    )
+    botao_selecionar_arquivo.on_click = selecionar_arquivo_audio
+
+    botao_gravar_audio = criar_botao(
+        "Gravar áudio",
+        ft.Icons.MIC,
+        COR_PRINCIPAL,
+        COR_FUNDO,
+        COR_PRINCIPAL,
+        ft.BorderSide(1, COR_PRINCIPAL),
+        desativado=True  # Mantendo o botão de gravação desativado
+    )
+    # Botão para iniciar a transcrição
+    botao_transcrever = criar_botao(
+        "Transcrever",
+        ft.Icons.TEXT_SNIPPET,
+        COR_FUNDO,
+        COR_PRINCIPAL,
+        COR_FUNDO,
+        desativado=True  # Começa desativado até que um arquivo seja selecionado
+    )
+    # Ajustando tamanho do botão para facilitar o clique
+    botao_transcrever.width = 200
+    botao_transcrever.height = 40
+    # Definindo o manipulador de evento para o botão de transcrição de forma explícita
+    botao_transcrever.on_click = iniciar_transcricao    # Área de upload de áudio
     area_upload = ft.Container(
         content=ft.Column(
             [
@@ -62,31 +236,24 @@ def main(page: ft.Page):
                         size=13, color=COR_TEXTO_SECUNDARIO),
                 ft.Row(
                     [
-                        criar_botao(
-                            "Selecionar arquivo",
-                            ft.Icons.FOLDER_OPEN,
-                            COR_FUNDO,
-                            COR_PRINCIPAL,
-                            COR_FUNDO
-                        ),
-                        criar_botao(
-                            "Gravar áudio",
-                            ft.Icons.MIC,
-                            COR_PRINCIPAL,
-                            COR_FUNDO,
-                            COR_PRINCIPAL,
-                            ft.BorderSide(1, COR_PRINCIPAL)
-                        ),
+                        botao_selecionar_arquivo,
+                        botao_gravar_audio,
                     ],
                     alignment=ft.MainAxisAlignment.CENTER,
                     spacing=10,
                 ),
+                ft.Container(
+                    content=botao_transcrever,
+                    margin=ft.margin.only(top=5),
+                    alignment=ft.alignment.center,
+                ),
+                mensagem_status,  # Mensagem de status abaixo do botão
             ],
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             spacing=10,
         ),
         width=500,
-        height=190,
+        height=260,  # Aumentei a altura para acomodar melhor a mensagem de status
         border=ft.border.all(1, COR_BORDA),
         border_radius=8,
         padding=15,
@@ -114,7 +281,7 @@ def main(page: ft.Page):
                     size=14,
                 ),
                 ft.Text(
-                    "Faça upload de um arquivo de áudio para iniciar",
+                    "       Faça upload de um arquivo de áudio para iniciar",
                     size=13,
                     color=COR_TEXTO_SECUNDARIO,
                     text_align=ft.TextAlign.CENTER,
@@ -123,6 +290,7 @@ def main(page: ft.Page):
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             alignment=ft.MainAxisAlignment.CENTER,
             spacing=8,
+            scroll=ft.ScrollMode.AUTO,  # Adicionando scroll para textos longos
         ),
         width=500,
         height=250,
@@ -131,7 +299,7 @@ def main(page: ft.Page):
         border_radius=8,
         padding=20,
         margin=ft.margin.symmetric(horizontal=20),
-        clip_behavior=ft.ClipBehavior.HARD_EDGE,
+        clip_behavior=ft.ClipBehavior.HARD_EDGE
     )
 
     # Botão para limpar a transcrição
@@ -141,8 +309,10 @@ def main(page: ft.Page):
         COR_ALERTA,
         COR_FUNDO,
         COR_ALERTA,
-        ft.BorderSide(1, COR_ALERTA)
+        ft.BorderSide(1, COR_ALERTA),
+        desativado=True  # Começa desativado até ter uma transcrição
     )
+    botao_limpar.on_click = limpar_transcricao
 
     # Conteúdo principal com layout simplificado
     conteudo_principal = ft.Column(
@@ -181,4 +351,4 @@ def main(page: ft.Page):
 
 
 # Inicia o aplicativo
-ft.app(target=main)
+ft.app(target=main, view=ft.AppView.FLET_APP)

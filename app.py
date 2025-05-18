@@ -3,6 +3,11 @@ import speech_recognition as sr
 from pydub import AudioSegment
 import subprocess
 import sys
+from dotenv import load_dotenv
+import google.generativeai as genai
+
+# Carregando variáveis de ambiente do arquivo .env
+load_dotenv()
 
 
 def check_ffmpeg():
@@ -136,6 +141,38 @@ def transcribe_audio(file_path):
         return f"Erro ao processar o áudio: {e}"
 
 
+def improve_transcription_with_ai(text):
+    """Utiliza a API do Google Gemini para melhorar a transcrição."""
+    api_key = os.getenv('GEMINI_KEY')
+
+    if not api_key:
+        print("Aviso: Chave da API Gemini não encontrada no arquivo .env. Pulando melhoria da transcrição.")
+        return text
+
+    # Configurando a API do Google Gemini
+    genai.configure(api_key=api_key)
+
+    try:
+        # Usando o modelo diretamente
+        model = genai.GenerativeModel("models/gemini-2.0-flash")
+
+        # Combinando o prompt com o texto transcrito
+        prompt = f"""Esse texto se trata de uma transcrição de áudio, você deve melhorar essa frase e 
+dar sentido a ela, melhorando a pontuação, mudando palavras que estiverem erradas 
+e dando mais sentido para ele, lembrando que deve ser em português:
+
+"{text}"
+"""
+
+        # Obtendo a resposta melhorada
+        response = model.generate_content(prompt)
+        return response.text
+
+    except Exception as e:
+        print(f"Erro ao melhorar transcrição com IA: {e}")
+        return text  # Em caso de erro, retorna o texto original
+
+
 def main():
     # Obtém o diretório base onde o script está sendo executado
     base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -159,8 +196,13 @@ def main():
 
         print("Transcrevendo o áudio...")
         transcription = transcribe_audio(compatible_file)
-        print("Transcrição concluída:")
+        print("Transcrição original:")
         print(transcription)
+
+        print("\nMelhorando a transcrição com IA...")
+        improved_transcription = improve_transcription_with_ai(transcription)
+        print("\nTranscrição melhorada:")
+        print(improved_transcription)
     except Exception as e:
         print(f"Erro: {e}")
 

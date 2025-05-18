@@ -40,8 +40,9 @@ def main(page: ft.Page):
                 side=borda,
             ),
             disabled=desativado,
-        )    # Função para mostrar mensagens de status
-
+        )    
+    
+    # Função para mostrar mensagens de status
     def mostrar_status(mensagem, cor=COR_TEXTO_SECUNDARIO):
         mensagem_status.value = mensagem
         mensagem_status.color = cor

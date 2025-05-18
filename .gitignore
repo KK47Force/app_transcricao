@@ -9,3 +9,5 @@ audio3.opus
 teste.opus
 teste.wav
 audio2.wav
+.env/
+.env

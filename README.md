@@ -1,6 +1,6 @@
 # Aplicativo de Transcrição de Áudio (v1.0)
 
-Este aplicativo converte arquivos de áudio em diferentes formatos para texto utilizando reconhecimento de fala via Google Speech Recognition.
+Este aplicativo converte arquivos de áudio em diferentes formatos para texto utilizando reconhecimento de fala via Google Speech Recognition. Além da transcrição básica, o aplicativo oferece uma versão com interface gráfica e recursos avançados de melhoria de texto usando inteligência artificial. Um vídeo demonstrativo (`Demonstrativo.mp4`) está disponível para mostrar todas as funcionalidades em ação.
 
 ## Estrutura do Projeto
 
@@ -9,6 +9,7 @@ app_transcricao/
 ├── app.py          # Script principal de transcrição (versão 1.0)
 ├── app_grafig.py   # Interface gráfica para transcrição de áudio
 ├── app_grafig_ia.py # Interface gráfica com melhoria de texto via IA
+├── Demonstrativo.mp4 # Vídeo de demonstração do aplicativo
 ```
 
 ## Como Usar o Aplicativo
@@ -71,6 +72,17 @@ Para usar a versão com IA, é necessário:
 ```
 python app_grafig_ia.py
 ```
+
+## Vídeo Demonstrativo
+
+O arquivo `Demonstrativo.mp4` contém uma demonstração completa do aplicativo em funcionamento. Este vídeo mostra:
+
+- Como usar a interface gráfica para selecionar um arquivo de áudio
+- O processo de transcrição em tempo real
+- A melhoria automática do texto usando a IA do Google Gemini
+- Como copiar e utilizar os resultados
+
+Para assistir à demonstração, basta abrir o arquivo `Demonstrativo.mp4` com qualquer reprodutor de vídeo compatível.
 
 ## Requisitos
 

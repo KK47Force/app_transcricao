@@ -11,6 +11,24 @@ app_transcricao/
 ├── app_grafig_ia.py # Interface gráfica com melhoria de texto via IA
 ```
 
+## Como Usar o Aplicativo
+
+1. Coloque seus arquivos de áudio na mesma pasta do script `app.py`
+
+2. Execute o script:
+   ```
+   python app.py
+   ```
+
+3. Quando solicitado, digite o nome do arquivo de áudio que deseja transcrever (ex: `audio.opus`)
+
+4. O aplicativo irá:
+   - Verificar se o arquivo precisa ser convertido para WAV
+   - Converter o arquivo se necessário (usando FFmpeg)
+   - Carregar e transcrever o áudio
+   - Melhorar automaticamente a transcrição de áudio usando IA generativa
+   - Exibir o texto transcrito e o texto melhorado no terminal
+
 ## Interface Gráfica (app_grafig.py)
 
 O arquivo `app_grafig.py` é uma extensão do `app.py` que fornece uma interface gráfica amigável para o processo de transcrição de áudio. Ele utiliza a biblioteca Flet (baseada em Flutter) para criar uma aplicação desktop moderna e responsiva.
@@ -103,27 +121,8 @@ pip install -r requirements.txt
 
 Outros formatos como MP3, OPUS, OGG ou AAC são formatos comprimidos que, embora economizem espaço, podem perder detalhes sutis necessários para um reconhecimento de fala eficiente. O FFmpeg realiza esta conversão automaticamente durante a execução do script para garantir a compatibilidade.
 
-## Como Usar o Aplicativo
-
-1. Coloque seus arquivos de áudio na mesma pasta do script `app.py`
-
-2. Execute o script:
-   ```
-   python app.py
-   ```
-
-3. Quando solicitado, digite o nome do arquivo de áudio que deseja transcrever (ex: `audio.opus`)
-
-4. O aplicativo irá:
-   - Verificar se o arquivo precisa ser convertido para WAV
-   - Converter o arquivo se necessário (usando FFmpeg)
-   - Carregar e transcrever o áudio
-   - Exibir o texto transcrito no terminal
-
 ## Limitações
 
-- O reconhecimento de fala via Google tem um limite aproximado de 60 segundos por arquivo
-- Para áudios mais longos, é recomendado dividi-los em segmentos menores
 - A qualidade da transcrição depende da clareza do áudio e pode variar
 
 ## Formatos Suportados

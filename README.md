@@ -7,13 +7,59 @@ Este aplicativo converte arquivos de áudio em diferentes formatos para texto ut
 ```
 app_transcricao/
 ├── app.py          # Script principal de transcrição (versão 1.0)
+├── app_grafig.py   # Interface gráfica para transcrição de áudio
+├── app_grafig_ia.py # Interface gráfica com melhoria de texto via IA
+```
+
+## Interface Gráfica (app_grafig.py)
+
+O arquivo `app_grafig.py` é uma extensão do `app.py` que fornece uma interface gráfica amigável para o processo de transcrição de áudio. Ele utiliza a biblioteca Flet (baseada em Flutter) para criar uma aplicação desktop moderna e responsiva.
+
+### Características do app_grafig.py:
+
+- Interface gráfica intuitiva para selecionar e transcrever arquivos de áudio
+- Suporte para os mesmos formatos de áudio que o script em linha de comando
+- Exibição visual do texto transcrito com opções para copiar e limpar
+- Indicadores visuais do progresso durante o processamento
+- Layout moderno e responsivo compatível com Windows, macOS e Linux
+
+### Como executar a interface gráfica:
+
+```
+python app_grafig.py
+```
+
+## Interface Gráfica com IA (app_grafig_ia.py)
+
+O arquivo `app_grafig_ia.py` é uma versão avançada da interface gráfica que adiciona o recurso de melhoria de texto usando a API do Google Gemini. Além de todas as funcionalidades do `app_grafig.py`, ele:
+
+- Melhora automaticamente a transcrição de áudio usando IA generativa
+- Apresenta o texto original e o texto melhorado lado a lado
+- Permite copiar ou limpar ambas as versões do texto independentemente
+- Corrige automaticamente erros de pontuação, gramática e coerência
+
+### Configuração da API do Gemini
+
+Para usar a versão com IA, é necessário:
+
+1. Obter uma chave de API do Google Gemini em: https://aistudio.google.com/app/apikey
+2. Criar um arquivo `.env` na raiz do projeto com o seguinte conteúdo:
+   ```
+   GEMINI_KEY=sua_chave_api_aqui
+   ```
+
+### Como executar a versão com IA:
+
+```
+python app_grafig_ia.py
 ```
 
 ## Requisitos
 
 - Python 3.6+
-- Pacotes Python: speech_recognition, pydub
+- Pacotes Python: speech_recognition, pydub, flet, python-dotenv, google-generativeai
 - FFmpeg
+- Chave de API do Google Gemini (para a versão com IA)
 
 ## Instalação do FFmpeg
 
@@ -41,8 +87,14 @@ O FFmpeg é necessário para converter arquivos de áudio de diversos formatos p
 
 ### Instalação dos pacotes Python
 
+Para a versão básica em linha de comando:
 ```
 pip install SpeechRecognition pydub
+```
+
+Para a versão com interface gráfica:
+```
+pip install -r requirements.txt
 ```
 
 ## Por que converter para WAV?
